@@ -27,7 +27,7 @@ app.use("/api/cart", CartRoute);
 app.use("/api/order", OrderRoute);
 app.use("/api/chat", ConversationRoute);
 
-const port = 3000;
+const port = process.env.PORT || 3000;
 var server = app.listen(port, () => {
     console.log("Backend server is running!");
     console.log("localhost:" + port);
