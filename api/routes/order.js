@@ -245,9 +245,6 @@ router.post("/placeOrder/:gmail", async (req, res) => {
                 } else {
                     if (element.quantity > book.numberInStock) {
                         flag = true
-                        return res.status(301).json({
-                            message: "Sorry. Currently the store don't have enough quantity of those book"
-                        })
                     }
                 }
             })
@@ -313,6 +310,10 @@ router.post("/placeOrder/:gmail", async (req, res) => {
                     }
                 }
             });
+        } else {
+            return res.status(301).json({
+                message: "Sorry. Currently the store don't have enough quantity of those book"
+            })
         }
     } catch (error) {
         res.status(401).json({
