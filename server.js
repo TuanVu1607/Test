@@ -46,7 +46,6 @@ Mongoose.connect(
 //Connect Socket
 let adminId = [];
 let clientId = [];
-console.log(server);
 const io = require("socket.io")(server, {
     cors: {
         origin: "*",
@@ -65,13 +64,13 @@ io.on("connection", (socket) => {
         if (!clientId.includes(socket.id)) {
             clientId.push(socket.id);
         }
-        socket.emit("forwardToAdmin", "hello");
+        io.emit("forwardToAdmin", "hello");
     });
     socket.on("adminChat", () => {
         console.log("push-to-client");
         if (!adminId.includes(socket.id)) {
             adminId.push(socket.id);
         }
-        socket.emit("newMessageFromAdmin", "hello");
+        io.emit("newMessageFromAdmin", "hello");
     });
 });
