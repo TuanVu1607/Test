@@ -234,7 +234,7 @@ router.get("/:gmail/:ID", async (req, res) => {
 router.post("/placeOrder/:gmail", async (req, res) => {
     try {
         let flag = false
-        req.body.dataCart.forEach(element => {
+        await req.body.dataCart.forEach(element => {
             Book.findOne({
                 _id: element._id
             }).exec((err, book) => {
