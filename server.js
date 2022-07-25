@@ -49,7 +49,7 @@ let clientId = [];
 console.log(server);
 const io = require("socket.io")(server, {
     cors: {
-        origin: "https://book-store-server-node-promap.herokuapp.com",
+        origin: "*",
     },
 });
 
