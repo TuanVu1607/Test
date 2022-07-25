@@ -1,4 +1,4 @@
-const router = require("express").Router();
+﻿const router = require("express").Router();
 const Books = require("../models/Books");
 const Images = require("../models/Image");
 const Cart = require("../models/Cart");
@@ -191,7 +191,7 @@ router.post("/insertBook", async (req, res) => {
                     }
                 });
                 IMG.push(
-                    "http://192.168.1.4:3000/api/image/" + req.files[i].originalname
+                    "https://book-store-server-node-promap.herokuapp.com/api/image/" + req.files[i].originalname
                 );
             }
             var cate = JSON.parse(req.body.category);
@@ -267,7 +267,7 @@ router.put("/:ID", async (req, res) => {
                                 }
                             });
                             IMG.push(
-                                "http://192.168.1.4:3000/api/image/" + req.files[i].originalname
+                                "https://book-store-server-node-promap.herokuapp.com/api/image/" + req.files[i].originalname
                             );
                         }
                     }
