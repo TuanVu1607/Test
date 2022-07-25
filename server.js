@@ -64,13 +64,13 @@ io.on("connection", (socket) => {
         if (!clientId.includes(socket.id)) {
             clientId.push(socket.id);
         }
-        io.emit("forwardToAdmin", "hello");
+        socket.emit("forwardToAdmin", "hello");
     });
     socket.on("adminChat", () => {
         console.log("push-to-client");
         if (!adminId.includes(socket.id)) {
             adminId.push(socket.id);
         }
-        io.emit("newMessageFromAdmin", "hello");
+        socket.emit("newMessageFromAdmin", "hello");
     });
 });
