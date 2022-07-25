@@ -236,11 +236,17 @@ router.post("/placeOrder/:gmail", async (req, res) => {
         req.body.dataCart.forEach(element => {
             Book.findOne({
                 _id: element._id
-            }).exec(book => {
-                if (element.quantity > book.numberInStock ) {
+            }).exec((err, book) => {
+                if (err) {
                     return res.status(301).json({
-                        message: "Sorry. Currently the store don't have enough quantity of those book"
+                        message: err.message
                     })
+                } else {
+                    if (element.quantity > book.numberInStock) {
+                        return res.status(301).json({
+                            message: "Sorry. Currently the store don't have enough quantity of those book"
+                        })
+                    }
                 }
             })
         });
