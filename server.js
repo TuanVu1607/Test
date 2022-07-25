@@ -48,7 +48,7 @@ let adminId = [];
 let clientId = [];
 const io = require("socket.io")(server, {
     cors: {
-        origin: "*",
+        origin: "https://book-store-server-node-promap.herokuapp.com",
     },
 });
 
