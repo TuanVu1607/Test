@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const Cart = require("../models/Cart");
 const Order = require("../models/Orders");
+const Book = require("../models/Books");
 
 //Get All Orders
 router.get("/getAll", async (req, res) => {
@@ -232,6 +233,17 @@ router.get("/:gmail/:ID", async (req, res) => {
 //Place Order
 router.post("/placeOrder/:gmail", async (req, res) => {
     try {
+        req.body.dataCart.forEach(element => {
+            Book.findOne({
+                _id: element._id
+            }).exec(book => {
+                if (element.quantity > book.numberInStock ) {
+                    return res.status(301).json({
+                        message: "Sorry. Currently the store don't have enough quantity of those book"
+                    })
+                }
+            })
+        });
         var date_ob = new Date();
         var day = ("0" + date_ob.getDate()).slice(-2);
         var month = ("0" + (date_ob.getMonth() + 1)).slice(-2);
