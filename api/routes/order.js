@@ -233,88 +233,78 @@ router.get("/:gmail/:ID", async (req, res) => {
 //Place Order
 router.post("/placeOrder/:gmail", async (req, res) => {
     try {
-        let flag = false
-        await req.body.dataCart.forEach(element => {
-            Book.findOne({
+        for (const element of req.body.dataCart) {
+            let h = await Book.findOne({
                 _id: element._id
-            }).exec((err, book) => {
-                if (err) {
+            })
+            if (h != null) {
+                if (element.quantity > h.numberInStock) {
                     return res.status(301).json({
-                        message: err.message
+                        message: "Sorry. Currently the store don't have enough quantity of those book"
                     })
-                } else {
-                    if (element.quantity > book.numberInStock) {
-                        flag = true
-                    }
                 }
-            })
-        });
-        if (flag === false) {
-            var date_ob = new Date();
-            var day = ("0" + date_ob.getDate()).slice(-2);
-            var month = ("0" + (date_ob.getMonth() + 1)).slice(-2);
-            var year = date_ob.getFullYear();
-            var date = day + "-" + month + "-" + year;
-            var hours = date_ob.getHours();
-            var minutes = date_ob.getMinutes();
-            var seconds = date_ob.getSeconds();
-            var time = hours + ":" + minutes + ":" + seconds;
-            var dateTime = {
-                date: date,
-                time: time
-            };
-
-            const orderList = [];
-            req.body.dataCart.forEach((item) => {
-                orderList.push({
-                    _id: item._id,
-                    price: item.price,
-                    quantity: item.quantity,
-                    bookName: item.name,
-                    image: item.images
-                });
-            });
-            const order = new Order({
-                gmail: req.params.gmail,
-                orderList: orderList,
-                status: {
-                    isAccept: false,
-                    isDelivery: false,
-                    isSuccessful: false,
-                },
-                totalPayment: req.body.totalPayment,
-                shippingAddress: {
-                    address: req.body.dataAddress.address,
-                    phone: req.body.dataAddress.phone,
-                    name: req.body.dataAddress.name
-                },
-                dateTime: dateTime
-            });
-            order.save(async (err) => {
-                if (err) {
-                    res.status(401).json({
-                        message: "Place order Failed"
-                    });
-                } else {
-                    try {
-                        const cart = await Cart.deleteOne({
-                            gmail: req.params.gmail
-                        });
-                        return res.status(200).json({
-                            message: "Place order Successful"
-                        });
-                    } catch (e) {
-                        return res.status(401).json({
-                            message: e.message
-                        });
-                    }
-                }
-            });
-        } else {
-            return res.status(301).json({
-                message: "Sorry. Currently the store don't have enough quantity of those book"
-            })
+            }
         }
+        var date_ob = new Date();
+        var day = ("0" + date_ob.getDate()).slice(-2);
+        var month = ("0" + (date_ob.getMonth() + 1)).slice(-2);
+        var year = date_ob.getFullYear();
+        var date = day + "-" + month + "-" + year;
+        var hours = date_ob.getHours();
+        var minutes = date_ob.getMinutes();
+        var seconds = date_ob.getSeconds();
+        var time = hours + ":" + minutes + ":" + seconds;
+        var dateTime = {
+            date: date,
+            time: time
+        };
+
+        const orderList = [];
+        req.body.dataCart.forEach((item) => {
+            orderList.push({
+                _id: item._id,
+                price: item.price,
+                quantity: item.quantity,
+                bookName: item.name,
+                image: item.images
+            });
+        });
+        const order = new Order({
+            gmail: req.params.gmail,
+            orderList: orderList,
+            status: {
+                isAccept: false,
+                isDelivery: false,
+                isSuccessful: false,
+            },
+            totalPayment: req.body.totalPayment,
+            shippingAddress: {
+                address: req.body.dataAddress.address,
+                phone: req.body.dataAddress.phone,
+                name: req.body.dataAddress.name
+            },
+            dateTime: dateTime
+        });
+        order.save(async (err) => {
+            if (err) {
+                res.status(401).json({
+                    message: "Place order Failed"
+                });
+            } else {
+                try {
+                    const cart = await Cart.deleteOne({
+                        gmail: req.params.gmail
+                    });
+                    return res.status(200).json({
+                        message: "Place order Successful"
+                    });
+                } catch (e) {
+                    return res.status(401).json({
+                        message: e.message
+                    });
+                }
+            }
+        });
     } catch (error) {
         res.status(401).json({
             message: error.message
@@ -324,6 +314,16 @@ router.post("/placeOrder/:gmail", async (req, res) => {
 //Buy Now
 router.post("/buyNow/:gmail", async (req, res) => {
     try {
+        let h = await Book.findOne({
+            _id: req.body.dataCart._id
+        })
+        if (h != null) {
+            if (req.body.dataCart.quantity > h.numberInStock) {
+                return res.status(301).json({
+                    message: "Sorry. Currently the store don't have enough quantity of those book"
+                })
+            }
+        }
         var date_ob = new Date();
         var day = ("0" + date_ob.getDate()).slice(-2);
         var month = ("0" + (date_ob.getMonth() + 1)).slice(-2);
