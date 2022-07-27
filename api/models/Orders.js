@@ -19,6 +19,10 @@ const StatusSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  isCancel: {
+    type: Boolean,
+    default: false
+  },
 });
 const AddressSchema = new mongoose.Schema({
   address: String,

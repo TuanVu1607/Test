@@ -18,44 +18,55 @@ router.get("/getAll", async (req, res) => {
             } else {
                 let orders = [];
                 order.map((item) => {
-                    if (item.status[0].isSuccessful === true) {
+                    if (item.status[0].isCancel === true) {
                         orders.push({
                             _id: item._id,
                             gmail: item.gmail,
-                            status: "Successful",
+                            status: "Canceled",
                             totalPayment: item.totalPayment,
                             shippingAddress: item.shippingAddress[0].address,
                             dateTime: item.dateTime[0].date,
                         });
                     } else {
-                        if (item.status[0].isDelivery === true) {
+                        if (item.status[0].isSuccessful === true) {
                             orders.push({
                                 _id: item._id,
                                 gmail: item.gmail,
-                                status: "In Delivery",
+                                status: "Successful",
                                 totalPayment: item.totalPayment,
                                 shippingAddress: item.shippingAddress[0].address,
                                 dateTime: item.dateTime[0].date,
                             });
                         } else {
-                            if (item.status[0].isAccept === true) {
+                            if (item.status[0].isDelivery === true) {
                                 orders.push({
                                     _id: item._id,
                                     gmail: item.gmail,
-                                    status: "Accepted",
+                                    status: "In Delivery",
                                     totalPayment: item.totalPayment,
                                     shippingAddress: item.shippingAddress[0].address,
                                     dateTime: item.dateTime[0].date,
                                 });
                             } else {
-                                orders.push({
-                                    _id: item._id,
-                                    gmail: item.gmail,
-                                    status: "Awaiting Approval",
-                                    totalPayment: item.totalPayment,
-                                    shippingAddress: item.shippingAddress[0].address,
-                                    dateTime: item.dateTime[0].date,
-                                });
+                                if (item.status[0].isAccept === true) {
+                                    orders.push({
+                                        _id: item._id,
+                                        gmail: item.gmail,
+                                        status: "Accepted",
+                                        totalPayment: item.totalPayment,
+                                        shippingAddress: item.shippingAddress[0].address,
+                                        dateTime: item.dateTime[0].date,
+                                    });
+                                } else {
+                                    orders.push({
+                                        _id: item._id,
+                                        gmail: item.gmail,
+                                        status: "Awaiting Approval",
+                                        totalPayment: item.totalPayment,
+                                        shippingAddress: item.shippingAddress[0].address,
+                                        dateTime: item.dateTime[0].date,
+                                    });
+                                }
                             }
                         }
                     }
@@ -272,11 +283,12 @@ router.post("/placeOrder/:gmail", async (req, res) => {
         const order = new Order({
             gmail: req.params.gmail,
             orderList: orderList,
-            status: {
-                isAccept: false,
-                isDelivery: false,
-                isSuccessful: false,
-            },
+            // status: {
+            //     isAccept: false,
+            //     isDelivery: false,
+            //     isSuccessful: false,
+            //     isCancel:false
+            // },
             totalPayment: req.body.totalPayment,
             shippingAddress: {
                 address: req.body.dataAddress.address,
@@ -292,6 +304,17 @@ router.post("/placeOrder/:gmail", async (req, res) => {
                 });
             } else {
                 try {
+                    //Update numberInStock
+                    for (const element of req.body.dataCart) {
+                        let h = await Book.findOne({
+                            _id: element._id
+                        })
+                        if (h != null) {
+                            h.numberInStock -= element.quantity
+                            h.save()
+                        }
+                    }
+                    //Delete Cart
                     const cart = await Cart.deleteOne({
                         gmail: req.params.gmail
                     });
@@ -346,11 +369,12 @@ router.post("/buyNow/:gmail", async (req, res) => {
                 bookName: req.body.dataCart.name,
                 image: req.body.dataCart.images
             },
-            status: {
-                isAccept: false,
-                isDelivery: false,
-                isSuccessful: false,
-            },
+            // status: {
+            //     isAccept: false,
+            //     isDelivery: false,
+            //     isSuccessful: false,
+            //     isCancel:false
+            // },
             totalPayment: req.body.totalPayment,
             shippingAddress: {
                 address: req.body.dataAddress.address,
@@ -365,6 +389,14 @@ router.post("/buyNow/:gmail", async (req, res) => {
                     message: "Place order Failed"
                 });
             } else {
+                //Update numberInStock
+                let h = await Book.findOne({
+                    _id: req.body.dataCart._id
+                })
+                if (h != null) {
+                    h.numberInStock -= req.body.dataCart.quantity
+                    h.save()
+                }
                 res.status(200).json({
                     message: "Place order Successful"
                 });
@@ -393,7 +425,10 @@ router.put("/setStatus/:gmail/:ID", async (req, res) => {
                         message: "Orders not found"
                     });
                 } else {
-                    if (req.body.action === "accept") {
+                    if (req.body.action === "cancel") {
+                        order.status[0].isCancel = true;
+                    }
+                    else if (req.body.action === "accept") {
                         order.status[0].isAccept = true;
                     }
                     else if (req.body.action === "delivery") {
@@ -403,6 +438,17 @@ router.put("/setStatus/:gmail/:ID", async (req, res) => {
                         order.status[0].isSuccessful = true;
                     }
                     order.save();
+                    if (req.body.action === "cancel") {
+                        order.orderList.map(async (item) => {
+                            const book = await Book.findOne({
+                                _id: item._id
+                            })
+                            if (book != null) {
+                                book.numberInStock += item.quantity
+                                book.save()
+                            }
+                        })
+                    }
                     res.status(200).json({
                         message: "Update Complete"
                     });
