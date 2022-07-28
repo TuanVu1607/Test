@@ -461,5 +461,24 @@ router.put("/setStatus/:gmail/:ID", async (req, res) => {
         });
     }
 });
-
+//Delete Order
+router.delete("/deleteOrder/:ID", async (req, res) => {
+    const order = await Order.findOne({
+        _id: req.params.ID
+    })
+    if (order != null) {
+        if (order.status[0].isCancel == false) {
+            return res.status(401).json({
+                message: "This order can not be deleted because it's in process"
+            });
+        } else {
+            const orders = await Order.deleteOne({
+                _id: req.params.ID
+            })
+            res.status(200).json({
+                message: "Delete Completely"
+            })
+        }
+    }
+});
 module.exports = router;
