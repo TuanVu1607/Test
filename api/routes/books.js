@@ -129,64 +129,18 @@ router.get("/search/publisher/:Publisher", async (req, res) => {
 });
 //Combine Search BookName+Author+Publisher
 router.get("/search/condition/:condition", async (req, res) => {
-    // const book = await Books.find({
-    //     "$or": [{
-    //         "name": { $regex: req.params.condition, $options: "i", }
-    //     }, {
-    //         "author": { $regex: req.params.condition, $options: "i", }
-    //     },{
-    //         "publisher": { $regex: req.params.condition, $options: "i", }
-    //     }]
-    // });
+    const result = await Books.find({
+        "$or": [{
+            "name": { $regex: req.params.condition, $options: "i", }
+        }, {
+            "author": { $regex: req.params.condition, $options: "i", }
+        }, {
+            "publisher": { $regex: req.params.condition, $options: "i", }
+        }]
+    });
 
-    const book = await Books.find({ name: { $regex: req.params.condition, $options: "i", } });
-    const author = await Books.find({ author: { $regex: req.params.condition, $options: "i", } });
-    const publisher = await Books.find({ publisher: { $regex: req.params.condition, $options: "i", } });
-
-    let result = []
-    if (book.length > 0 && author.length > 0 && publisher.length > 0) {
-        book.map((item) => { result.push(item) });
-        author.map((item) => { result.push(item) });
-        publisher.map((item) => { result.push(item) });
-        const bookHashMap = {};
-        result = result.filter((item) => {
-            let alreadyExists = bookHashMap.hasOwnProperty(item._id)
-            return alreadyExists ? false : bookHashMap[item._id] = 1
-        })
-        return res.status(200).json(result);
-    } else if (book.length > 0 && author.length > 0 && publisher.length == 0) {
-        book.map((item) => { result.push(item) });
-        author.map((item) => { result.push(item) });
-        const bookHashMap = {};
-        result = result.filter((item) => {
-            let alreadyExists = bookHashMap.hasOwnProperty(item._id)
-            return alreadyExists ? false : bookHashMap[item._id] = 1
-        })
-        return res.status(200).json(result);
-    } else if (book.length > 0 && author.length == 0 && publisher.length > 0) {
-        book.map((item) => { result.push(item) });
-        publisher.map((item) => { result.push(item) });
-        const bookHashMap = {};
-        result = result.filter((item) => {
-            let alreadyExists = bookHashMap.hasOwnProperty(item._id)
-            return alreadyExists ? false : bookHashMap[item._id] = 1
-        })
-        return res.status(200).json(result);
-    } else if (book.length == 0 && author.length > 0 && publisher.length > 0) {
-        author.map((item) => { result.push(item) });
-        publisher.map((item) => { result.push(item) });
-        const bookHashMap = {};
-        result = result.filter((item) => {
-            let alreadyExists = bookHashMap.hasOwnProperty(item._id)
-            return alreadyExists ? false : bookHashMap[item._id] = 1
-        })
-        return res.status(200).json(result);
-    } else if (book.length > 0 && author.length == 0 && publisher.length == 0) {
-        return res.status(200).json(book);
-    } else if (book.length == 0 && author.length > 0 && publisher.length == 0) {
-        return res.status(200).json(author);
-    } else if (book.length == 0 && author.length == 0 && publisher.length > 0) {
-        return res.status(200).json(publisher);
+    if (result.length > 0) {
+        return res.status(200).json(result)
     } else {
         return res.status(401).json({
             message: "Book not found"
