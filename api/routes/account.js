@@ -21,6 +21,26 @@ router.get("/getAll", async (req, res) => {
         }
     })
 });
+//get All Account Of User
+router.get("/getAllUser", async (req, res) => {
+    Account.find({
+        role: false
+    }).exec((err, acc) => {
+        if (err) {
+            res.status(401).json({
+                message: "Account not found"
+            })
+        } else {
+            if (acc.length == 0) {
+                res.status(401).json({
+                    message: "Account not found"
+                });
+            } else {
+                res.status(200).json(acc);
+            }
+        }
+    })
+});
 //get Account by gmail
 router.get("/search/user/mail/:gmail", async (req, res) => {
     Account.findOne({
