@@ -6,6 +6,7 @@ const multer = require("multer");
 const fs = require("fs");
 const path = require("path");
 const Account = require("../models/Account");
+const Order = require("../models/Orders");
 //Storage
 const Storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -37,6 +38,59 @@ router.get("/getAll", async (req, res) => {
             }
         }
     });
+});
+//Get All Books
+router.get("/getTopSeller", async (req, res) => {
+    try {
+        const book = await Books.find({});
+        const order = await Order.find({});
+        let arrTopSeller = []
+        book.map((item) => {
+            let count = 0;
+            order.map((element) => {
+                element.orderList.map((i) => {
+                    if (i._id == item._id) {
+                        count = count + i.quantity;
+                    }
+                })
+            })
+            arrTopSeller.push({
+                _id: item._id,
+                name: item.name,
+                description: item.description,
+                publisher: item.publisher,
+                numberInStock: item.numberInStock,
+                price: item.price,
+                author: item.author,
+                category: item.category,
+                images: item.images,
+                rating: item.rating,
+                numberOfSales: count,
+            });
+            count = 0;
+        })
+
+        arrTopSeller = arrTopSeller.sort(function (a, b) {
+            return a.numberOfSales - b.numberOfSales
+        });
+        arrTopSeller = arrTopSeller.reverse();
+        let result = []
+        if (arrTopSeller.length > 10) {
+            for (let i = 0; i < 10; i++) {
+                result.push(arrTopSeller[i]);
+            }
+        } else {
+            arrTopSeller.map(item => {
+                result.push(item)
+            })
+        }
+
+        return res.status(200).json(result);
+    } catch (error) {
+        return res.status(403).json({
+            message: error.message
+        });
+    }
 });
 //Get A Book By ID
 router.get("/:ID", async (req, res) => {
