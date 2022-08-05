@@ -50,6 +50,12 @@ router.post("/insertCategory", async (req, res) => {
                 message: "Thông tin rỗng"
             });
         }
+        const category = await Category.findOne({ name: req.body.name });
+        if (category != null) {
+            return res.status(300).json({
+                message: "This Category is already exists"
+            });
+        }
         let Cate = {
             name: req.body.name,
         }
@@ -66,54 +72,6 @@ router.post("/insertCategory", async (req, res) => {
 //Update Category
 router.put("/:ID", async (req, res) => {
     try {
-        // Books.find({}).exec((err, book) => {
-        //     if (err) {
-        //         res.status(301).json({
-        //             message: err.message
-        //         });
-        //     } else {
-        //         flag = false;
-        //         book.map(b => {
-        //             b.category.map(item => {
-        //                 if (item === req.body.name) {
-        //                     flag = true;
-        //                 }
-        //             })
-        //         })
-        //         if (flag === false) {
-        //             Category.findOne({
-        //                 _id: req.params.ID
-        //             }).exec((err, category) => {
-        //                 if (err) {
-        //                     return res.status(401).json({
-        //                         message: err.message
-        //                     });
-        //                 } else {
-        //                     if (category == null) {
-        //                         res.status(401).json({
-        //                             message: "Book not found"
-        //                         })
-        //                     } else {
-        //                         if (req.body.name.length == 0) {
-        //                             return res.status(300).json({
-        //                                 message: "Thông tin rỗng"
-        //                             });
-        //                         }
-        //                         category.name = req.body.name;
-        //                         category.save();
-        //                         res.status(200).json({
-        //                             message: "Update Completely"
-        //                         });
-        //                     }
-        //                 }
-        //             });
-        //         } else {
-        //             res.status(301).json({
-        //                 message: "You can't edit this Category because there are books in it!!!"
-        //             });
-        //         }
-        //     }
-        // });
         const book = await Books.find({});
         const category = await Category.findOne({ _id: req.params.ID });
         if (book != null) {
