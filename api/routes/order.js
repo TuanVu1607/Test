@@ -283,12 +283,12 @@ router.post("/placeOrder/:gmail", async (req, res) => {
         const order = new Order({
             gmail: req.params.gmail,
             orderList: orderList,
-            // status: {
-            //     isAccept: false,
-            //     isDelivery: false,
-            //     isSuccessful: false,
-            //     isCancel:false
-            // },
+            status: {
+                isAccept: false,
+                isDelivery: false,
+                isSuccessful: false,
+                isCancel:false
+            },
             totalPayment: req.body.totalPayment,
             shippingAddress: {
                 address: req.body.dataAddress.address,
