@@ -369,12 +369,12 @@ router.post("/buyNow/:gmail", async (req, res) => {
                 bookName: req.body.dataCart.name,
                 image: req.body.dataCart.images
             },
-            // status: {
-            //     isAccept: false,
-            //     isDelivery: false,
-            //     isSuccessful: false,
-            //     isCancel:false
-            // },
+            status: {
+            	isAccept: false,
+                isDelivery: false,
+                isSuccessful: false,
+                isCancel:false
+            },
             totalPayment: req.body.totalPayment,
             shippingAddress: {
                 address: req.body.dataAddress.address,
