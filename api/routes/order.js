@@ -287,7 +287,8 @@ router.post("/placeOrder/:gmail", async (req, res) => {
                 isAccept: false,
                 isDelivery: false,
                 isSuccessful: false,
-                isCancel:false
+                isCancel: false,
+                reasonCancel: "",
             },
             totalPayment: req.body.totalPayment,
             shippingAddress: {
@@ -370,10 +371,11 @@ router.post("/buyNow/:gmail", async (req, res) => {
                 image: req.body.dataCart.images
             },
             status: {
-            	isAccept: false,
+                isAccept: false,
                 isDelivery: false,
                 isSuccessful: false,
-                isCancel:false
+                isCancel: false,
+                reasonCancel: "",
             },
             totalPayment: req.body.totalPayment,
             shippingAddress: {
@@ -427,6 +429,7 @@ router.put("/setStatus/:gmail/:ID", async (req, res) => {
                 } else {
                     if (req.body.action === "cancel") {
                         order.status[0].isCancel = true;
+                        order.status[0].reasonCancel = req.body.reasonCancel;
                     }
                     else if (req.body.action === "accept") {
                         order.status[0].isAccept = true;

@@ -84,7 +84,6 @@ router.get("/getTopSeller", async (req, res) => {
                 result.push(item)
             })
         }
-
         return res.status(200).json(result);
     } catch (error) {
         return res.status(403).json({
@@ -378,34 +377,46 @@ router.put("/:ID", async (req, res) => {
 //Delete Book
 router.delete("/:ID", async (req, res) => {
     try {
-        Cart.find({}).exec(async (err, cart) => {
-            if (err) {
-                return res.status(401).json({
-                    message: err.message
-                })
-            } else {
-                flag = false
-                cart.forEach(item => {
-                    item.items.forEach(i => {
-                        if (i._id == req.params.ID) {
-                            flag = true;
-                        }
-                    })
-                })
-                if (flag === false) {
-                    const books = await Books.deleteOne({
-                        _id: req.params.ID,
-                    });
-                    res.status(200).json({
-                        message: "Delete Completely",
-                    });
-                } else {
-                    res.status(301).json({
-                        message: "This book cannot be delete because it is in User's Cart",
-                    });
+        const cart = await Cart.find({});
+        const order = await Order.find({});
+        let inCart = false;
+        let inOrder = false;
+        cart.forEach(item => {
+            item.items.forEach(i => {
+                if (i._id == req.params.ID) {
+                    inCart = true;
                 }
+            })
+        })
+        order.forEach(item => {
+            item.orderList.forEach(i => {
+                if (i._id == req.params.ID) {
+                    inOrder = true;
+                }
+            })
+        })
+        if (inCart === false && inOrder === false) {
+            const books = await Books.deleteOne({
+                _id: req.params.ID,
+            });
+            res.status(200).json({
+                message: "Delete Completely",
+            });
+        } else {
+            if (inCart === true && inOrder === false) {
+                res.status(301).json({
+                    message: "This book cannot be delete because it is in User's Cart",
+                });
+            } else if (inCart === false && inOrder === true) {
+                res.status(301).json({
+                    message: "This book cannot be delete because it is in User's Order",
+                });
+            } else {
+                res.status(301).json({
+                    message: "This book cannot be delete because it is in User's Cart and User's Order",
+                });
             }
-        });
+        }
     } catch (error) {
         res.status(401).json({
             message: error.message,

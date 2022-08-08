@@ -23,6 +23,7 @@ const StatusSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  reasonCancel: String,
 });
 const AddressSchema = new mongoose.Schema({
   address: String,
