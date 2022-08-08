@@ -48,11 +48,13 @@ router.get("/getTopSeller", async (req, res) => {
         book.map((item) => {
             let count = 0;
             order.map((element) => {
-                element.orderList.map((i) => {
-                    if (i._id == item._id) {
-                        count = count + i.quantity;
-                    }
-                })
+                if (element.status[0].isCancel === false) {
+                    element.orderList.map((i) => {
+                        if (i._id == item._id) {
+                            count = count + i.quantity;
+                        }
+                    })
+                }
             })
             arrTopSeller.push({
                 _id: item._id,
