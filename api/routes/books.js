@@ -298,78 +298,102 @@ router.post("/insertBook", async (req, res) => {
 //Update Book
 router.put("/:ID", async (req, res) => {
     try {
-        Books.findOne({
-            _id: req.params.ID,
-        }).exec((err, book) => {
-            if (err) {
-                return res.status(401).json({
-                    message: "Book not found",
-                });
-            } else {
-                upload(req, res, (err) => {
-                    if (
-                        req.body.name.length == 0 ||
-                        req.body.author.length == 0 ||
-                        req.body.publisher.length == 0 ||
-                        req.body.numberInStock.length == 0 ||
-                        req.body.category.length == 0 ||
-                        req.body.price.length == 0 ||
-                        req.body.description.length == 0
-                    ) {
-                        return res.status(300).json({
-                            message: "Thông tin rỗng!",
-                        });
-                    }
-                    var IMG = [];
-                    if (req.files.length != 0) {
-                        for (let i = 0; i < req.files.length; i++) {
-                            const img = {
-                                imgName: req.files[i].originalname,
-                                image: {
-                                    data: fs.readFileSync(
-                                        path.join("img/" + req.files[i].filename)
-                                    ),
-                                    contentType: "image/png",
-                                },
-                            };
-                            Images.create(img, (err, item) => {
-                                if (err) {
-                                    return res.status(401).json({
-                                        message: "Error Create Image",
-                                    });
-                                } else {
-                                    item.save();
-                                }
-                            });
-                            IMG.push(
-                                "https://book-store-server-node-promap.herokuapp.com/api/image/" + req.files[i].originalname
-                            );
-                        }
-                    }
-
-                    var cate = JSON.parse(req.body.category);
-                    var Cate = [];
-                    for (let i = 0; i < cate.length; i++) {
-                        Cate.push(cate[i]);
-                    }
-
-                    book.name = req.body.name;
-                    book.author = req.body.author;
-                    book.publisher = req.body.publisher;
-                    book.numberInStock = req.body.numberInStock;
-                    book.price = req.body.price;
-                    book.description = req.body.description;
-                    book.category = Cate;
-                    if (req.files.length != 0) {
-                        book.images = IMG;
-                    }
-                    book.save();
-                    res.status(200).json({
-                        message: "Update Completely",
+        const cart = await Cart.find({});
+        const order = await Order.find({});
+        let inCart = false;
+        let inOrder = false;
+        cart.forEach(item => {
+            item.items.forEach(i => {
+                if (i._id == req.params.ID) {
+                    inCart = true;
+                }
+            })
+        })
+        order.forEach(item => {
+            item.orderList.forEach(i => {
+                if (i._id == req.params.ID) {
+                    inOrder = true;
+                }
+            })
+        })
+        if (inCart === false && inOrder === false) {
+            Books.findOne({
+                _id: req.params.ID,
+            }).exec((err, book) => {
+                if (err) {
+                    return res.status(401).json({
+                        message: "Book not found",
                     });
-                });
-            }
-        });
+                } else {
+                    upload(req, res, (err) => {
+                        if (
+                            req.body.name.length == 0 ||
+                            req.body.author.length == 0 ||
+                            req.body.publisher.length == 0 ||
+                            req.body.numberInStock.length == 0 ||
+                            req.body.category.length == 0 ||
+                            req.body.price.length == 0 ||
+                            req.body.description.length == 0
+                        ) {
+                            return res.status(300).json({
+                                message: "Thông tin rỗng!",
+                            });
+                        }
+                        var IMG = [];
+                        if (req.files.length != 0) {
+                            for (let i = 0; i < req.files.length; i++) {
+                                const img = {
+                                    imgName: req.files[i].originalname,
+                                    image: {
+                                        data: fs.readFileSync(
+                                            path.join("img/" + req.files[i].filename)
+                                        ),
+                                        contentType: "image/png",
+                                    },
+                                };
+                                Images.create(img, (err, item) => {
+                                    if (err) {
+                                        return res.status(401).json({
+                                            message: "Error Create Image",
+                                        });
+                                    } else {
+                                        item.save();
+                                    }
+                                });
+                                IMG.push(
+                                    "https://book-store-server-node-promap.herokuapp.com/api/image/" + req.files[i].originalname
+                                );
+                            }
+                        }
+
+                        var cate = JSON.parse(req.body.category);
+                        var Cate = [];
+                        for (let i = 0; i < cate.length; i++) {
+                            Cate.push(cate[i]);
+                        }
+
+                        book.name = req.body.name;
+                        book.author = req.body.author;
+                        book.publisher = req.body.publisher;
+                        book.numberInStock = req.body.numberInStock;
+                        book.price = req.body.price;
+                        book.description = req.body.description;
+                        book.category = Cate;
+                        if (req.files.length != 0) {
+                            book.images = IMG;
+                        }
+                        book.save();
+                        res.status(200).json({
+                            message: "Update Completely",
+                        });
+                    });
+                }
+            });
+        } else {
+            return res.status(301).json({
+                message: "This book cannot be edit because it is in User's Cart or User's Order",
+            });
+        }
     } catch (error) {
         res.status(401).json({
             message: "Update Failed",
