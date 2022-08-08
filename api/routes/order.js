@@ -428,8 +428,14 @@ router.put("/setStatus/:gmail/:ID", async (req, res) => {
                     });
                 } else {
                     if (req.body.action === "cancel") {
-                        order.status[0].isCancel = true;
-                        order.status[0].reasonCancel = req.body.reasonCancel;
+                        if (order.status[0].isCancel == true || order.status[0].isSuccessful == true || order.status[0].isDelivery == true) {
+                            return res.status(401).json({
+                                message: "Access Denied"
+                            });
+                        } else {
+                            order.status[0].isCancel = true;
+                            order.status[0].reasonCancel = req.body.reasonCancel;
+                        }
                     }
                     else if (req.body.action === "accept") {
                         order.status[0].isAccept = true;
